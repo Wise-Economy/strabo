@@ -1,16 +1,23 @@
 # finwise
 
-finwise mobile app
+Personal finance manager.
 
-## Getting Started
+# Version 0.0.1
 
-This project is a starting point for a Flutter application.
+## App screens
 
-A few resources to get you started if this is your first Flutter project:
+- Home screen with google sign-in
+- 4 digit PIN Code login
+- Global account summary page
+- Individual Account summary
+- Linked bank accounts management page
+- Settings page (User profile info fetched from google sign-in)
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Other features
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Single button for both login and sign up called as `connect with google`.
+- PIN Code is used to login to the app every time.
+- PIN code is set when the user is on-boarded for the first time.
+
+
+
