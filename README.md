@@ -1,6 +1,6 @@
 # finwise
 
-finwise mobile app
+Personal finances manager
 
 ## Getting Started
 
