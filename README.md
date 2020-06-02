@@ -1,13 +1,11 @@
 # finwise
 
-Personal finance manager.
-
-# Version 0.0.1
+finwise mobile app
 
 ## App screens
 
 - Home screen with google sign-in
-- 4 digit PIN Code login
+- 6 digit PIN Code login
 - Global account summary page
 - Individual Account summary
 - Linked bank accounts management page
