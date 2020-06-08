@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import '../screens/passcode.dart';
+import '../models/AppData.dart';
+import '../screens/PasscodeScreen.dart';
 
 GoogleSignIn _googleSignIn = GoogleSignIn(
   scopes: <String>[
@@ -24,6 +26,7 @@ class _InitScreenState extends State<InitScreen> {
   @override
   void initState() {
     super.initState();
+    _googleSignIn.disconnect();
     _checkIfIsSignedIn();
   }
 
@@ -52,8 +55,11 @@ class _InitScreenState extends State<InitScreen> {
     }
   }
 
-  gotoPinScreen() {
+  gotoPinScreen() async {
     if (isSignedIn) {
+      Provider.of<AppData>(context, listen: false).currentUser =
+          await _googleSignIn.signInSilently();
+      print('_googleSignIn.currentUser ${_googleSignIn.currentUser}');
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -66,7 +72,7 @@ class _InitScreenState extends State<InitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1f304e),
+      backgroundColor: Theme.of(context).accentColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 25.0),
