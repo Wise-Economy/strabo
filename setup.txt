@@ -1,0 +1,2 @@
+This is a smooth Setup guide for macOS : https://flutter.dev/docs/get-started/install/macos
+You can blindly follow the guide to install and run the app on both iOS emulator and android emulator.
