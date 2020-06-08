@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../screens/Home.dart';
+import '../screens/HomeScreen.dart';
 
 class PasscodeScreen extends StatefulWidget {
   @override
