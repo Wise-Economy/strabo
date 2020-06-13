@@ -1,80 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../common/constants.dart';
+import '../models/AppState.dart';
 import '../screens/HomeScreen.dart';
 
 class PasscodeScreen extends StatefulWidget {
+  final isExistingUser;
+
+  PasscodeScreen({@required this.isExistingUser});
+
   @override
   _PasscodeScreenState createState() => _PasscodeScreenState();
 }
 
 class _PasscodeScreenState extends State<PasscodeScreen> {
-  String _pin = '';
-  String confirmPin = '';
+  String _actualPin = '';
+
+  String _confirmPin = '';
   final _pinLength = 6;
-  String pinText;
-  bool pinConfirming = false;
-  bool inCorrectPin = false;
-  bool newLogin = false;
+  String _pinText;
+  bool _pinConfirming = false;
+  bool _inCorrectPin = false;
+  bool _isNewUser;
+
+  SharedPreferences _preferencesInstance;
 
   @override
   void initState() {
     super.initState();
+    _preferencesInstance = Provider.of<AppState>(context, listen: false).preferences;
+    _isNewUser = widget.isExistingUser;
     setState(() {
-      if (newLogin) {
-        pinText = 'SETUP PIN';
+      if (_isNewUser) {
+        _pinText = 'ENTER PIN';
       } else {
-        pinText = 'ENTER PIN';
-        _pin = '';
+        _pinText = 'SETUP PIN';
       }
     });
   }
 
   onChange(String number) async {
-    if (_pin.length < _pinLength) {
+    if (_actualPin.length < _pinLength) {
       setState(() {
-        _pin += number;
+        _actualPin += number;
       });
     }
-    if (_pin.length == _pinLength) {
+    if (_actualPin.length == _pinLength) {
       await Future.delayed(Duration(milliseconds: 100));
-      if (newLogin) {
-        if (pinConfirming) {
-          if (confirmPin == _pin) {
+      if (_isNewUser) {
+        if (_actualPin == '123456') {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(),
+              ),
+              (route) => false);
+        } else {
+          setState(() {
+            _inCorrectPin = true;
+            _actualPin = '';
+          });
+        }
+      } else {
+        if (_pinConfirming) {
+          if (_confirmPin == _actualPin) {
+            _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
             Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
                   builder: (context) => HomeScreen(),
                 ),
                 (route) => false);
+            print('$_actualPin PIN SETUP SUCCESS');
           } else {
             setState(() {
-              pinText = 'SETUP PIN';
-              confirmPin = '';
-              _pin = '';
-              pinConfirming = false;
+              _pinText = 'SETUP PIN';
+              _confirmPin = '';
+              _actualPin = '';
+              _pinConfirming = false;
             });
           }
         } else {
           setState(() {
-            pinText = 'CONFIRM PIN';
-            confirmPin = _pin;
-            _pin = '';
-            pinConfirming = true;
-          });
-        }
-      } else {
-        if (_pin == '123456') {
-          Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HomeScreen(),
-                 ),
-              (route) => false);
-        } else {
-          setState(() {
-            inCorrectPin = true;
-            _pin = '';
+            _pinText = 'CONFIRM PIN';
+            _confirmPin = _actualPin;
+            _actualPin = '';
+            _pinConfirming = true;
           });
         }
       }
@@ -82,9 +97,9 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
   }
 
   onDelete() {
-    if (_pin.isNotEmpty) {
+    if (_actualPin.isNotEmpty) {
       setState(() {
-        _pin = _pin.substring(0, _pin.length - 1);
+        _actualPin = _actualPin.substring(0, _actualPin.length - 1);
       });
     }
   }
@@ -103,14 +118,11 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      '$pinText',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blueGrey,
-                          fontWeight: FontWeight.bold),
+                      '$_pinText',
+                      style: TextStyle(fontSize: 16, color: Colors.blueGrey),
                     ),
                     SizedBox(
-                      height: 15,
+                      height: 20,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -123,11 +135,8 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                             height: 20,
                             width: 20,
                             decoration: BoxDecoration(
-                                color: _pin.length <= index
-                                    ? Colors.white
-                                    : Colors.blueGrey,
-                                border: Border.all(
-                                    color: Colors.blueGrey, width: 2),
+                                color: _actualPin.length <= index ? Colors.white : Colors.blueGrey,
+                                border: Border.all(color: Colors.blueGrey, width: 1),
                                 shape: BoxShape.circle),
                           ),
                         ),
@@ -137,7 +146,7 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                       height: 15,
                     ),
                     Text(
-                      '${inCorrectPin ? 'Incorrect Pin' : ''}',
+                      '${_inCorrectPin ? 'Incorrect Pin' : ''}',
                       style: TextStyle(color: Colors.red.shade300),
                     )
                   ],
@@ -147,8 +156,7 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
             Wrap(
               children: List.generate(
                 12,
-                (index) =>
-                    number(index == 9 ? 0 : index + 1, onChange, onDelete),
+                (index) => number(index == 9 ? 0 : index + 1, onChange, onDelete),
               ),
               crossAxisAlignment: WrapCrossAlignment.center,
             )
@@ -173,13 +181,13 @@ Widget number(int number, onChange, onDelete) {
       highlightColor: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
           border: Border(
             bottom: BorderSide(color: Colors.blueGrey, width: 0.5),
             right: BorderSide(color: Colors.blueGrey, width: 0.5),
           ),
         ),
         height: 100,
+        width: 100,
         child: Center(
           child: number != 12
               ? Text(

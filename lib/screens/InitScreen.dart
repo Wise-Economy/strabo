@@ -1,18 +1,14 @@
+import 'package:finwise/common/constants.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/AppData.dart';
+import '../models/AppState.dart';
 import '../screens/PasscodeScreen.dart';
-
-GoogleSignIn _googleSignIn = GoogleSignIn(
-  scopes: <String>[
-    'profile',
-    'https://www.googleapis.com/auth/userinfo.profile'
-  ],
-);
+import '../screens/RegisterScreen.dart';
 
 class InitScreen extends StatefulWidget {
   @override
@@ -21,52 +17,78 @@ class InitScreen extends StatefulWidget {
 
 class _InitScreenState extends State<InitScreen> {
   GoogleSignInAccount _currentUser;
-  bool isSignedIn = true;
+  GoogleSignIn _googleSignIn;
+  bool _isSignedIn = true;
+  SharedPreferences _preferencesInstance;
 
   @override
   void initState() {
     super.initState();
-    _googleSignIn.disconnect();
+    _googleSignIn = Provider.of<AppState>(context, listen: false).googleSignIn;
     _checkIfIsSignedIn();
   }
 
   _checkIfIsSignedIn() async {
-    await Future.delayed(Duration(seconds: 2));
-    bool result = await _googleSignIn.isSignedIn();
+    _preferencesInstance = await SharedPreferences.getInstance();
+    Provider.of<AppState>(context, listen: false).preferences = _preferencesInstance;
+    bool isLoggedIn = false;
+    if (_preferencesInstance.containsKey(Constants.IS_LOGGED_IN)) {
+      isLoggedIn = _preferencesInstance.getBool(Constants.IS_LOGGED_IN);
+      isLoggedIn = await _googleSignIn.isSignedIn();
+      if (isLoggedIn) {
+        _currentUser = await _googleSignIn.signInSilently();
+      }
+    }
     setState(() {
-      isSignedIn = result;
+      _isSignedIn = isLoggedIn;
     });
-    gotoPinScreen();
+
+    gotoNextScreen();
   }
 
   _handleSignIn() async {
     try {
       _currentUser = await _googleSignIn.signIn();
       if (_currentUser != null) {
+        Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
+        _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
         setState(() {
-          isSignedIn = true;
+          _isSignedIn = true;
         });
       }
-      await Future.delayed(Duration(seconds: 2));
-      gotoPinScreen();
-      print(_currentUser);
+
+      gotoNextScreen();
     } catch (error) {
       print(error);
     }
   }
 
-  gotoPinScreen() async {
-    if (isSignedIn) {
-      Provider.of<AppData>(context, listen: false).currentUser =
-          await _googleSignIn.signInSilently();
-      print('_googleSignIn.currentUser ${_googleSignIn.currentUser}');
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PasscodeScreen(),
-        ),
-      );
+  gotoNextScreen() async {
+    if (_isSignedIn) {
+      //check if user already exists
+      isExistingUser().then((value) {
+        if (value) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PasscodeScreen(isExistingUser: value),
+            ),
+          );
+        } else {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RegisterScreen(username: _currentUser.displayName, isExistingUser: value),
+              ));
+        }
+      });
     }
+  }
+
+  // here goes network call with our server to check if user is existing or not
+  Future<bool> isExistingUser() async {
+    await Future.delayed(Duration(seconds: 2));
+    return false;
   }
 
   @override
@@ -85,7 +107,7 @@ class _InitScreenState extends State<InitScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        'Finwise',
+                        'Wiseeco',
                         style: TextStyle(fontSize: 40.0, color: Colors.white),
                       ),
                       Text(
@@ -106,43 +128,41 @@ class _InitScreenState extends State<InitScreen> {
                   width: 300,
                   child: Center(
                     child: AnimatedCrossFade(
-                      crossFadeState: isSignedIn
-                          ? CrossFadeState.showSecond
-                          : CrossFadeState.showFirst,
+                      crossFadeState: _isSignedIn ? CrossFadeState.showSecond : CrossFadeState.showFirst,
                       duration: Duration(milliseconds: 200),
-                      firstChild: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: OutlineButton(
-                            highlightColor: Colors.transparent,
-                            textColor: Colors.white,
-                            highlightedBorderColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: 15.0),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(3.0)),
-                            borderSide:
-                                BorderSide(color: Colors.white, width: 1),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                SvgPicture.asset(
-                                  'assets/brand/google.svg',
-                                  height: 25,
-                                  width: 25,
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  'Connect via Google',
-                                  style: TextStyle(
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w300,
-                                    color: Colors.white,
+                      firstChild: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: OutlineButton(
+                              highlightColor: Colors.transparent,
+                              textColor: Colors.white,
+                              highlightedBorderColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 15.0),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
+                              borderSide: BorderSide(color: Colors.white, width: 1),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  SvgPicture.asset(
+                                    'assets/brand/google.svg',
+                                    height: 25,
+                                    width: 25,
                                   ),
-                                ),
-                              ],
-                            ),
-                            onPressed: _handleSignIn),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    'Connect via Google',
+                                    style: TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w300,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onPressed: _handleSignIn),
+                        ),
                       ),
                       secondChild: Center(
                         child: Padding(
