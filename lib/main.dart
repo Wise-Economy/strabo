@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-import 'models/AppData.dart';
+import 'models/AppState.dart';
 import 'screens/InitScreen.dart';
 
 void main() {
   runApp(
     Provider(
-      create: (_) => AppData(),
+      create: (context) => AppState(),
       child: App(),
     ),
   );
@@ -19,7 +19,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Finwise',
+      title: 'Wiseeco',
       theme: theme(),
       home: InitScreen(),
     );
