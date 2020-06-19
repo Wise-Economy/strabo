@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:provider/provider.dart';
-
+import '../blocs/Register.dart';
 import '../screens/PasscodeScreen.dart';
-import '../models/AppState.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String username;
@@ -16,43 +14,31 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  TextEditingController _dobController = TextEditingController();
+  final _register = Register();
   String _buttonLabel = "Continue";
   bool _enabled = true;
-
-  String _userName;
-  String _userDOB;
-  String _userCity;
-  String _userResidence;
-  String _userCitizenship;
 
   @override
   void initState() {
     super.initState();
-    _userName = widget.username;
-  }
-
-  _onSaveCountry(CountryType type, String value) {
-    if (type == CountryType.Residense) {
-      _userResidence = value;
-    } else {
-      _userCitizenship = value;
-    }
+    _register.changeUserName(widget.username);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Register',
+    return WillPopScope(
+      onWillPop: () {
+        Navigator.pop(context, false);
+        return Future.value(true);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: Text(
+            'Register',
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
+        body: SafeArea(
           child: Column(
             children: <Widget>[
               Flexible(
@@ -68,137 +54,242 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           padding: EdgeInsets.all(18.0),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              TextFormField(
-                                autofocus: false,
-                                enableInteractiveSelection: true,
-                                maxLength: 100,
-                                initialValue: _userName,
-                                keyboardType: TextInputType.text,
-                                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  counterText: "",
-                                  contentPadding: EdgeInsets.all(12.0),
-                                  hintText: 'Name',
-                                  hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
-                                  filled: true,
-                                  fillColor: Color.fromRGBO(241, 245, 251, 1),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                ),
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return "Name can't be empty";
-                                  }
-                                  return null;
-                                },
-                                onSaved: (value) {
-                                  _userName = value;
+                              StreamBuilder(
+                                stream: _register.userNameStream,
+                                builder: (context, snapshot) {
+                                  return TextFormField(
+                                    autofocus: false,
+                                    enableInteractiveSelection: true,
+                                    maxLength: 100,
+                                    initialValue: _register.userName,
+                                    onChanged: _register.changeUserName,
+                                    keyboardType: TextInputType.text,
+                                    style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      counterText: "",
+                                      errorText: snapshot.error,
+                                      contentPadding: EdgeInsets.all(12.0),
+                                      hintText: 'Name',
+                                      hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
+                                      filled: true,
+                                      fillColor: Color.fromRGBO(241, 245, 251, 1),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                          borderSide: BorderSide(color: Colors.transparent)),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                          borderSide: BorderSide(color: Colors.transparent)),
+                                      errorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                          borderSide: BorderSide(color: Colors.transparent)),
+                                      focusedErrorBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                          borderSide: BorderSide(color: Colors.transparent)),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                          borderSide: BorderSide(color: Colors.transparent)),
+                                    ),
+                                  );
                                 },
                               ),
                               const SizedBox(height: 15),
-                              TextFormField(
-                                autofocus: false,
-                                controller: _dobController,
-                                enableInteractiveSelection: true,
-                                keyboardType: TextInputType.datetime,
-                                maxLength: 10,
-                                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  counterText: "",
-                                  contentPadding: EdgeInsets.all(12.0),
-                                  hintText: 'DOB(DD/MM/YYYY)',
-                                  hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
-                                  filled: true,
-                                  fillColor: Color.fromRGBO(241, 245, 251, 1),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(241, 245, 251, 1),
+                                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
                                 ),
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return "DOB can't be empty";
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: <Widget>[
+                                    Flexible(
+                                      child: TextFormField(
+                                        autofocus: false,
+                                        enableInteractiveSelection: true,
+                                        keyboardType: TextInputType.number,
+                                        maxLength: 2,
+                                        textAlign: TextAlign.center,
+                                        onChanged: _register.changeUserDOBDay,
+                                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          counterText: "",
+                                          contentPadding: EdgeInsets.all(12.0),
+                                          hintText: 'DD',
+                                          hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
+                                          filled: true,
+                                          fillColor: Color.fromRGBO(241, 245, 251, 1),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          errorBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                        ),
+                                      ),
+                                    ),
+                                    Text('/'),
+                                    Flexible(
+                                      child: TextFormField(
+                                        autofocus: false,
+                                        textAlign: TextAlign.center,
+                                        enableInteractiveSelection: true,
+                                        keyboardType: TextInputType.number,
+                                        onChanged: _register.changeUserDOBMonth,
+                                        maxLength: 2,
+                                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          counterText: "",
+                                          contentPadding: EdgeInsets.all(12.0),
+                                          hintText: 'MM',
+                                          hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
+                                          filled: true,
+                                          fillColor: Color.fromRGBO(241, 245, 251, 1),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          errorBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                        ),
+                                      ),
+                                    ),
+                                    Text('/'),
+                                    Flexible(
+                                      child: TextFormField(
+                                        autofocus: false,
+                                        textAlign: TextAlign.center,
+                                        enableInteractiveSelection: true,
+                                        keyboardType: TextInputType.number,
+                                        maxLength: 4,
+                                        onChanged: _register.changeUserDOBYear,
+                                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          counterText: "",
+                                          contentPadding: EdgeInsets.all(12.0),
+                                          hintText: 'YYYY',
+                                          hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
+                                          filled: true,
+                                          fillColor: Color.fromRGBO(241, 245, 251, 1),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          errorBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          focusedErrorBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                              borderSide: BorderSide(color: Colors.transparent)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              StreamBuilder(
+                                stream: _register.userDOBStream,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Padding(
+                                      padding: EdgeInsets.only(left: 12, top: 8),
+                                      child: Text(
+                                        "Invalid DOB",
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.red.shade800, fontWeight: FontWeight.normal),
+                                      ),
+                                    );
                                   }
-                                  if (value.split('/').length != 3) return 'Invalid Date';
-                                  return null;
-                                },
-                                onSaved: (value) {
-                                  _userDOB = value;
+                                  return SizedBox.shrink();
                                 },
                               ),
                               const SizedBox(height: 15),
-                              TextFormField(
-                                autofocus: false,
-                                enableInteractiveSelection: true,
-                                maxLength: 100,
-                                maxLines: 1,
-                                keyboardType: TextInputType.text,
-                                style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  counterText: "",
-                                  contentPadding: EdgeInsets.all(12.0),
-                                  hintText: 'City',
-                                  hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
-                                  filled: true,
-                                  fillColor: Color.fromRGBO(241, 245, 251, 1),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  errorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                                      borderSide: BorderSide(color: Colors.transparent)),
+                              Container(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Flexible(child: CountryPhoneCodes(register: _register)),
+                                    SizedBox(
+                                      width: 15,
+                                    ),
+                                    Flexible(
+                                      flex: 3,
+                                      child: StreamBuilder(
+                                        stream: _register.mobileNumberStream,
+                                        builder: (context, snapshot) {
+                                          return TextFormField(
+                                            autofocus: false,
+                                            enableInteractiveSelection: true,
+                                            maxLength: 10,
+                                            maxLines: 1,
+                                            onChanged: _register.changeMobileNumber,
+                                            keyboardType: TextInputType.phone,
+                                            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+                                            decoration: InputDecoration(
+                                              errorText: snapshot.error,
+                                              isDense: true,
+                                              counterText: "",
+                                              alignLabelWithHint: true,
+                                              contentPadding: EdgeInsets.all(12.0),
+                                              hintText: 'Mobile',
+                                              hintStyle:
+                                                  TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 16.0),
+                                              filled: true,
+                                              fillColor: Color.fromRGBO(241, 245, 251, 1),
+                                              border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                                  borderSide: BorderSide(color: Colors.transparent)),
+                                              enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                                  borderSide: BorderSide(color: Colors.transparent)),
+                                              errorBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                                  borderSide: BorderSide(color: Colors.transparent)),
+                                              focusedErrorBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                                  borderSide: BorderSide(color: Colors.transparent)),
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                                                  borderSide: BorderSide(color: Colors.transparent)),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                validator: (value) {
-                                  if (value.isEmpty) {
-                                    return "City can't be empty";
-                                  }
-                                  return null;
-                                },
-                                onSaved: (value) {
-                                  _userCity = value;
-                                },
                               ),
                               const SizedBox(height: 15),
-                              CountryOptions(type: CountryType.Residense, onSave: _onSaveCountry),
+                              CountryOptions(register: _register),
                               const SizedBox(height: 15),
-                              CountryOptions(type: CountryType.Citizenship, onSave: _onSaveCountry),
                             ],
                           ),
                         ),
@@ -211,7 +302,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 flex: 0,
                 child: Container(
                   width: double.maxFinite,
-                  padding: EdgeInsets.all(30.0),
+                  padding: EdgeInsets.all(18.0),
                   child: RaisedButton(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     color: Theme.of(context).primaryColor,
@@ -222,9 +313,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
-                        print('$_userName,$_userDOB,$_userCity,$_userResidence,$_userCitizenship');
+                      if (_register.validateFields()) {
+                        print('Form has Valid Fields');
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
@@ -249,28 +339,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-}
-
-enum CountryType { Residense, Citizenship }
-
-class CountryOptions extends StatefulWidget {
-  final CountryType type;
-  final onSave;
-
-  CountryOptions({this.type, this.onSave});
 
   @override
-  _CountryOptionsState createState() => _CountryOptionsState();
+  void dispose() {
+    _register.dispose();
+    super.dispose();
+  }
 }
 
-class _CountryOptionsState extends State<CountryOptions> {
-  String dropdownValue;
+class CountryOptions extends StatefulWidget {
+  final Register register;
+
+  CountryOptions({Key key, this.register});
+
+  @override
+  CountryOptionsState createState() => CountryOptionsState();
+}
+
+class CountryOptionsState extends State<CountryOptions> {
+  String country;
   final _countries = ["INDIA", "GERMANY", "UK"];
+
+  @override
+  void initState() {
+    super.initState();
+    country = _countries[0];
+    widget.register.changeUserResidence(country);
+  }
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField(
-      value: dropdownValue,
+      value: country,
       items: _countries.map((String value) {
         return DropdownMenuItem<String>(
           value: value,
@@ -279,18 +379,19 @@ class _CountryOptionsState extends State<CountryOptions> {
       }).toList(),
       onChanged: (String newValue) {
         setState(() {
-          dropdownValue = newValue;
+          country = newValue;
+          widget.register.changeUserResidence(country);
         });
       },
       hint: Text(
-        'Country of ${widget.type == CountryType.Residense ? 'residense' : 'citizenship'}',
+        'Country of residence',
         style: TextStyle(
           color: Color.fromRGBO(199, 202, 216, 1),
         ),
       ),
       isDense: true,
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.all(12.0),
+        contentPadding: EdgeInsets.all(11.0),
         isDense: true,
         hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1)),
         filled: true,
@@ -306,18 +407,70 @@ class _CountryOptionsState extends State<CountryOptions> {
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(6.0)), borderSide: BorderSide(color: Colors.transparent)),
       ),
-      elevation: 2,
-      validator: (value) {
-        if (value != null && value.isEmpty) {
-          return "Country can't be empty";
-        } else if (value == null) {
-          return "Country can't be empty";
-        }
-        return null;
+    );
+  }
+}
+
+class CountryPhoneCodes extends StatefulWidget {
+  final Register register;
+
+  CountryPhoneCodes({Key key, this.register});
+
+  @override
+  CountryPhoneCodesState createState() => CountryPhoneCodesState();
+}
+
+class CountryPhoneCodesState extends State<CountryPhoneCodes> {
+  String code;
+  final _codes = ["+91", "+49", "+44"];
+
+  @override
+  void initState() {
+    super.initState();
+    code = _codes[0];
+    widget.register.changeMobileNumberCountryCode(code);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField(
+      value: code,
+      items: _codes.map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (String newValue) {
+        setState(() {
+          code = newValue;
+          widget.register.changeMobileNumberCountryCode(code);
+        });
       },
-      onSaved: (value) {
-        widget.onSave(widget.type, value);
-      },
+      hint: Text(
+        'code',
+        style: TextStyle(
+          color: Color.fromRGBO(199, 202, 216, 1),
+        ),
+      ),
+      isDense: true,
+      decoration: InputDecoration(
+        contentPadding: EdgeInsets.all(11.0),
+        isDense: true,
+        hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1)),
+        filled: true,
+        fillColor: Color.fromRGBO(241, 245, 251, 1),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(6.0)), borderSide: BorderSide(color: Colors.transparent)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(6.0)), borderSide: BorderSide(color: Colors.transparent)),
+        errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(6.0)), borderSide: BorderSide(color: Colors.transparent)),
+        focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(6.0)), borderSide: BorderSide(color: Colors.transparent)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(6.0)), borderSide: BorderSide(color: Colors.transparent)),
+      ),
     );
   }
 }

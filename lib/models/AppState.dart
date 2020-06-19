@@ -1,3 +1,4 @@
+import 'package:finwise/blocs/Connections.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,4 +11,10 @@ class AppState {
     ],
   );
   SharedPreferences preferences;
+
+  Connections get connections => Connections();
+
+  dispose() {
+    connections.dispose();
+  }
 }

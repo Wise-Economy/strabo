@@ -55,7 +55,6 @@ class ProfileTab extends StatelessWidget {
               },
               title: Text(
                 'Log out',
-                style: TextStyle(fontWeight: FontWeight.w300),
               ),
             )
           ],

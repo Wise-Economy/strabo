@@ -1,3 +1,4 @@
+import 'package:finwise/screens/IntialAddBank.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -6,12 +7,11 @@ import 'models/AppState.dart';
 import 'screens/InitScreen.dart';
 
 void main() {
-  runApp(
-    Provider(
-      create: (context) => AppState(),
-      child: App(),
-    ),
-  );
+  runApp(Provider(
+    create: (context) => AppState(),
+    dispose: (context, AppState appState) => appState.dispose(),
+    child: App(),
+  ));
 }
 
 class App extends StatelessWidget {
