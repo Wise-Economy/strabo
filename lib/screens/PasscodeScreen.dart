@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,24 +20,23 @@ class PasscodeScreen extends StatefulWidget {
 }
 
 class _PasscodeScreenState extends State<PasscodeScreen> {
-  String _actualPin = '';
-
   String _confirmPin = '';
-  final _pinLength = 6;
   String _pinText;
   bool _pinConfirming = false;
   bool _inCorrectPin = false;
-  bool _isNewUser;
-
+  bool _isExistingUser;
   SharedPreferences _preferencesInstance;
+  TextEditingController _pinController = TextEditingController();
+  GoogleSignInAccount _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _currentUser = Provider.of<AppState>(context, listen: false).currentUser;
     _preferencesInstance = Provider.of<AppState>(context, listen: false).preferences;
-    _isNewUser = widget.isExistingUser;
+    _isExistingUser = widget.isExistingUser ?? false;
     setState(() {
-      if (_isNewUser) {
+      if (_isExistingUser) {
         _pinText = 'ENTER PIN';
       } else {
         _pinText = 'SETUP PIN';
@@ -43,16 +44,32 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
     });
   }
 
-  onChange(String number) async {
-    if (_actualPin.length < _pinLength) {
-      setState(() {
-        _actualPin += number;
-      });
-    }
-    if (_actualPin.length == _pinLength) {
-      await Future.delayed(Duration(milliseconds: 100));
-      if (_isNewUser) {
-        if (_actualPin == '123456') {
+  onSubmit(String pin) async {
+    await Future.delayed(Duration(milliseconds: 100));
+    if (_isExistingUser) {
+      String savedPIN;
+      if (_preferencesInstance.containsKey(Constants.LOCAL_PIN)) {
+        savedPIN = _preferencesInstance?.getString(Constants.LOCAL_PIN);
+      }
+      if (pin == savedPIN) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(),
+            ),
+            (route) => false);
+      } else {
+        setState(() {
+          _inCorrectPin = true;
+          _pinController.clear();
+        });
+      }
+    } else {
+      if (_pinConfirming) {
+        if (_confirmPin == pin) {
+          _preferencesInstance?.setBool(Constants.IS_LOGGED_IN, true);
+          _preferencesInstance?.setBool(Constants.IS_EXISTING_USER, true);
+          _preferencesInstance?.setString(Constants.LOCAL_PIN, pin);
           Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
@@ -61,142 +78,100 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
               (route) => false);
         } else {
           setState(() {
+            _pinText = 'SETUP PIN';
+            _confirmPin = '';
+            _pinController.clear();
+            _pinConfirming = false;
             _inCorrectPin = true;
-            _actualPin = '';
           });
         }
       } else {
-        if (_pinConfirming) {
-          if (_confirmPin == _actualPin) {
-            _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => HomeScreen(),
-                ),
-                (route) => false);
-            print('$_actualPin PIN SETUP SUCCESS');
-          } else {
-            setState(() {
-              _pinText = 'SETUP PIN';
-              _confirmPin = '';
-              _actualPin = '';
-              _pinConfirming = false;
-            });
-          }
-        } else {
-          setState(() {
-            _pinText = 'CONFIRM PIN';
-            _confirmPin = _actualPin;
-            _actualPin = '';
-            _pinConfirming = true;
-          });
-        }
+        setState(() {
+          _pinText = 'CONFIRM PIN';
+          _confirmPin = pin;
+          _pinController.clear();
+          _pinConfirming = true;
+        });
       }
     }
   }
 
-  onDelete() {
-    if (_actualPin.isNotEmpty) {
-      setState(() {
-        _actualPin = _actualPin.substring(0, _actualPin.length - 1);
-      });
+  onSubmittedHandler(String value) {
+    print('onSubmittedHandler Called');
+  }
+
+  onChangedHandler(String pin) {
+    if (pin.isNotEmpty && pin.length == 6) {
+      onSubmit(pin);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Flexible(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      '$_pinText',
-                      style: TextStyle(fontSize: 16, color: Colors.blueGrey),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: List.generate(
-                        _pinLength,
-                        (index) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            height: 20,
-                            width: 20,
-                            decoration: BoxDecoration(
-                                color: _actualPin.length <= index ? Colors.white : Colors.blueGrey,
-                                border: Border.all(color: Colors.blueGrey, width: 1),
-                                shape: BoxShape.circle),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Text(
-                      '${_inCorrectPin ? 'Incorrect Pin' : ''}',
-                      style: TextStyle(color: Colors.red.shade300),
-                    )
-                  ],
-                ),
+            _isExistingUser
+                ? CircleAvatar(
+                    backgroundImage: NetworkImage(_currentUser?.photoUrl),
+                    radius: 30,
+                  )
+                : SizedBox.shrink(),
+            SizedBox(height: 10),
+            Text(
+              '${_currentUser?.displayName}',
+              style: TextStyle(fontSize: 16, color: Theme.of(context).primaryColor),
+            ),
+            SizedBox(height: 10),
+            Text(
+              '$_pinText',
+              style: TextStyle(fontSize: 16, color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _pinController,
+              autofocus: true,
+              enableInteractiveSelection: true,
+              maxLength: 6,
+              obscureText: true,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              onSubmitted: onSubmittedHandler,
+              onChanged: onChangedHandler,
+              style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.w300, letterSpacing: 10),
+              decoration: InputDecoration(
+                isDense: true,
+                counterText: "",
+                alignLabelWithHint: true,
+                contentPadding: EdgeInsets.all(8.0),
+                hintStyle: TextStyle(color: Color.fromRGBO(199, 202, 216, 1), fontSize: 26.0),
+                filled: true,
+                fillColor: Color.fromRGBO(241, 245, 251, 1),
+                border: OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
+                errorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
+                focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
               ),
             ),
-            Wrap(
-              children: List.generate(
-                12,
-                (index) => number(index == 9 ? 0 : index + 1, onChange, onDelete),
-              ),
-              crossAxisAlignment: WrapCrossAlignment.center,
-            )
+            SizedBox(height: 5),
+            Text(
+              '${_inCorrectPin ? '${_isExistingUser ? 'Incorrect PIN Try again' : 'Incorrect PIN Setup again'}' : ''}',
+              style: TextStyle(color: Colors.red.shade300),
+            ),
+            SizedBox(height: 5),
+            _isExistingUser
+                ? Text(
+                    '${_inCorrectPin ? 'Forgot PIN' : ''}',
+                    style: TextStyle(fontSize: 16, color: Theme.of(context).primaryColor),
+                  )
+                : SizedBox.shrink(),
           ],
         ),
       ),
     );
   }
-}
-
-Widget number(int number, onChange, onDelete) {
-  return FractionallySizedBox(
-    widthFactor: 0.3333,
-    child: InkWell(
-      onTap: () {
-        if (number <= 10) {
-          onChange(number.toString());
-        } else if (number == 12) {
-          onDelete();
-        }
-      },
-      highlightColor: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Colors.blueGrey, width: 0.5),
-            right: BorderSide(color: Colors.blueGrey, width: 0.5),
-          ),
-        ),
-        height: 100,
-        width: 100,
-        child: Center(
-          child: number != 12
-              ? Text(
-                  '${number == 11 ? '' : number}',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w300),
-                )
-              : SvgPicture.asset('assets/feather/delete.svg'),
-        ),
-      ),
-    ),
-  );
 }

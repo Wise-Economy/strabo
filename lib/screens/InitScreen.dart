@@ -1,4 +1,3 @@
-import 'package:finwise/common/constants.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -7,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/AppState.dart';
+import '../common/constants.dart';
 import '../screens/PasscodeScreen.dart';
 import '../screens/RegisterScreen.dart';
 
@@ -34,11 +34,20 @@ class _InitScreenState extends State<InitScreen> {
     bool isLoggedIn = false;
     if (_preferencesInstance.containsKey(Constants.IS_LOGGED_IN)) {
       isLoggedIn = _preferencesInstance.getBool(Constants.IS_LOGGED_IN);
-      isLoggedIn = await _googleSignIn.isSignedIn();
-      if (isLoggedIn) {
+      print('isLoggedIn: $isLoggedIn');
+      bool isGSignIn = await _googleSignIn.isSignedIn();
+      print('isGSignIn: $isGSignIn');
+      if (isLoggedIn && isGSignIn) {
         _currentUser = await _googleSignIn.signInSilently();
+        Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
+      } else {
+        if (isGSignIn) {
+          await _googleSignIn.disconnect();
+        }
+        isLoggedIn = false;
       }
     }
+    print('isLoggedIn: $isLoggedIn');
     setState(() {
       _isSignedIn = isLoggedIn;
     });
@@ -49,14 +58,16 @@ class _InitScreenState extends State<InitScreen> {
   _handleSignIn() async {
     try {
       _currentUser = await _googleSignIn.signIn();
+      _currentUser.authentication.then((value) => print('Access Token: ${value.accessToken}'));
       if (_currentUser != null) {
+        if (isExistingUser()) {
+          _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
+        }
         Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
-        _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
         setState(() {
           _isSignedIn = true;
         });
       }
-
       gotoNextScreen();
     } catch (error) {
       print(error);
@@ -66,28 +77,35 @@ class _InitScreenState extends State<InitScreen> {
   gotoNextScreen() async {
     if (_isSignedIn) {
       //check if user already exists
-      isExistingUser().then((value) {
-        if (value) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PasscodeScreen(isExistingUser: value),
-            ),
-          );
-        } else {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => RegisterScreen(username: _currentUser.displayName, isExistingUser: value),
-              ));
+      if (isExistingUser()) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PasscodeScreen(isExistingUser: true),
+          ),
+        );
+      } else {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RegisterScreen(username: _currentUser.displayName, isExistingUser: false),
+          ),
+        );
+        if (!result) {
+          await _googleSignIn.disconnect();
+          setState(() {
+            _isSignedIn = result;
+          });
         }
-      });
+      }
     }
   }
 
   // here goes network call with our server to check if user is existing or not
-  Future<bool> isExistingUser() async {
-    await Future.delayed(Duration(seconds: 2));
+  bool isExistingUser() {
+    if (_preferencesInstance.containsKey(Constants.IS_EXISTING_USER)) {
+      return _preferencesInstance.getBool(Constants.IS_EXISTING_USER);
+    }
     return false;
   }
 
@@ -121,56 +139,51 @@ class _InitScreenState extends State<InitScreen> {
                   ),
                 ),
               ),
-              Flexible(
-                flex: 0,
-                child: Container(
-                  height: 80,
-                  width: 300,
-                  child: Center(
-                    child: AnimatedCrossFade(
-                      crossFadeState: _isSignedIn ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                      duration: Duration(milliseconds: 200),
-                      firstChild: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: OutlineButton(
-                              highlightColor: Colors.transparent,
-                              textColor: Colors.white,
-                              highlightedBorderColor: Colors.white,
-                              padding: EdgeInsets.symmetric(vertical: 15.0),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
-                              borderSide: BorderSide(color: Colors.white, width: 1),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  SvgPicture.asset(
-                                    'assets/brand/google.svg',
-                                    height: 25,
-                                    width: 25,
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    'Connect via Google',
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w300,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+              Container(
+                height: 80,
+                width: 300,
+                child: AnimatedCrossFade(
+                  sizeCurve: Curves.easeInOutBack,
+                  crossFadeState: _isSignedIn ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                  duration: Duration(milliseconds: 200),
+                  firstChild: Center(
+                    key: ValueKey('1'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: OutlineButton(
+                          highlightColor: Colors.transparent,
+                          textColor: Colors.white,
+                          highlightedBorderColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 15.0),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
+                          borderSide: BorderSide(color: Colors.white, width: 1),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SvgPicture.asset(
+                                'assets/brand/google.svg',
+                                height: 25,
+                                width: 25,
                               ),
-                              onPressed: _handleSignIn),
-                        ),
-                      ),
-                      secondChild: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                'Connect via Google',
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.w300,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onPressed: _handleSignIn),
                     ),
+                  ),
+                  secondChild: Center(
+                    key: ValueKey('2'),
+                    child: CircularProgressIndicator(),
                   ),
                 ),
               )

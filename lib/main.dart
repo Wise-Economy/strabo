@@ -1,3 +1,5 @@
+import 'package:finwise/screens/IntialAddBank.dart';
+import 'package:finwise/screens/PasscodeScreen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -9,6 +11,7 @@ void main() {
   runApp(
     Provider(
       create: (context) => AppState(),
+      dispose: (context, AppState appState) => appState.dispose(),
       child: App(),
     ),
   );
@@ -43,5 +46,9 @@ ThemeData theme() {
   return ThemeData(
     primarySwatch: colorCustom,
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    dialogTheme: DialogTheme(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    ),
   );
 }
