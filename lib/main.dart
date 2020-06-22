@@ -1,4 +1,5 @@
 import 'package:finwise/screens/IntialAddBank.dart';
+import 'package:finwise/screens/PasscodeScreen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -7,11 +8,13 @@ import 'models/AppState.dart';
 import 'screens/InitScreen.dart';
 
 void main() {
-  runApp(Provider(
-    create: (context) => AppState(),
-    dispose: (context, AppState appState) => appState.dispose(),
-    child: App(),
-  ));
+  runApp(
+    Provider(
+      create: (context) => AppState(),
+      dispose: (context, AppState appState) => appState.dispose(),
+      child: App(),
+    ),
+  );
 }
 
 class App extends StatelessWidget {
@@ -43,5 +46,9 @@ ThemeData theme() {
   return ThemeData(
     primarySwatch: colorCustom,
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    dialogTheme: DialogTheme(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    ),
   );
 }

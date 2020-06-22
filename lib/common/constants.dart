@@ -2,6 +2,10 @@ class Constants {
   static const IS_LOGGED_IN = 'IS_LOGGED_IN';
   static const IS_EXISTING_USER = 'IS_EXISTING_USER';
 
+
+  //LOCAL PIN
+  static const LOCAL_PIN = 'LOCAL_PIN';
+
   //Customer ID
   static const CUSTOMER_ID = '239699917143017727';
 

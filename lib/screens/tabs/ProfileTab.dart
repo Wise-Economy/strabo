@@ -1,10 +1,11 @@
-import 'package:finwise/common/constants.dart';
-import 'package:finwise/screens/InitScreen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
+import '../InitScreen.dart';
 import '../../models/AppState.dart';
+import '../../common/constants.dart';
+import '../../common/widgets/progress.dart';
 
 class ProfileTab extends StatelessWidget {
   @override
@@ -19,7 +20,7 @@ class ProfileTab extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
-                backgroundImage: NetworkImage('${appState.currentUser.photoUrl}'),
+                backgroundImage: NetworkImage('${appState.currentUser?.photoUrl}'),
                 minRadius: 25,
                 maxRadius: 35,
               ),
@@ -30,7 +31,7 @@ class ProfileTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    '${appState.currentUser.displayName}',
+                    '${appState.currentUser?.displayName}',
                     style: TextStyle(fontSize: 20),
                   ),
                 ],
@@ -39,12 +40,20 @@ class ProfileTab extends StatelessWidget {
             ListTile(
               onTap: () {},
               title: Text('Email'),
-              subtitle: Text('${appState.currentUser.email}'),
+              subtitle: Text('${appState.currentUser?.email}'),
             ),
             ListTile(
               onTap: () {
+                showDialog<void>(
+                  context: context,
+                  barrierDismissible: false, // user must tap button!
+                  builder: (BuildContext context) {
+                    return progress();
+                  },
+                );
                 appState.googleSignIn.disconnect().then((value) {
                   appState.preferences.setBool(Constants.IS_LOGGED_IN, false);
+                  Navigator.of(context).pop();
                   Navigator.push(
                     context,
                     MaterialPageRoute(

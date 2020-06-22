@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/svg.dart';
@@ -48,87 +49,114 @@ class _IntialAddBankScreenState extends State<IntialAddBankScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).primaryColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(18.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              Container(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Card(
+                    elevation: 10,
+                    shadowColor: Colors.black38,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      child: Column(
                         children: <Widget>[
-                          Text(
-                            'INDIA',
-                            style: Theme.of(context).textTheme.headline5.copyWith(color: Colors.indigo),
-                            textAlign: TextAlign.center,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                'INDIA',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline5
+                                    .copyWith(color: Theme.of(context).primaryColor),
+                                textAlign: TextAlign.center,
+                              ),
+                              SvgPicture.network(
+                                  'https://d1uuj3mi6rzwpm.cloudfront.net/logos/providers/xf/placeholder_global.svg',
+                                  height: 50,
+                                  width: 50,
+                                  color: Theme.of(context).accentColor),
+                            ],
                           ),
-                          SvgPicture.network(
-                            'https://d1uuj3mi6rzwpm.cloudfront.net/logos/providers/xf/placeholder_global.svg',
-                            height: 50,
-                            width: 50,
-                          ),
+                          OutlineButton(
+                            onPressed: openSaltEdgeConnection,
+                            highlightColor: Colors.transparent,
+                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                            child: Text(
+                              '+ Link Bank',
+                              style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.w300),
+                            ),
+                          )
                         ],
                       ),
-                      FlatButton(
-                        onPressed: openSaltEdgeConnection,
-                        highlightColor: Colors.transparent,
-                        child: Text(
-                          '+ Link Bank',
-                          style: TextStyle(color: Colors.lightBlue, fontWeight: FontWeight.w300),
-                        ),
-                      )
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              Container(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  SizedBox(height: 20),
+                  Card(
+                    elevation: 10,
+                    color: Colors.white,
+                    shadowColor: Colors.black38,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      child: Column(
                         children: <Widget>[
-                          Text(
-                            'GERMANY',
-                            style: Theme.of(context).textTheme.headline5.copyWith(color: Colors.orange),
-                            textAlign: TextAlign.center,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                'GERMANY',
+                                style: Theme.of(context).textTheme.headline5.copyWith(color: Colors.orange),
+                                textAlign: TextAlign.center,
+                              ),
+                              SvgPicture.network(
+                                  'https://d1uuj3mi6rzwpm.cloudfront.net/logos/providers/xf/placeholder_global.svg',
+                                  height: 50,
+                                  width: 50,
+                                  color: Theme.of(context).accentColor),
+                            ],
                           ),
-                          SvgPicture.network(
-                            'https://d1uuj3mi6rzwpm.cloudfront.net/logos/providers/xf/placeholder_global.svg',
-                            height: 50,
-                            width: 50,
-                          ),
+                          OutlineButton(
+                            onPressed: openSaltEdgeConnection,
+                            highlightColor: Colors.transparent,
+                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                            child: Text(
+                              '+ Link Bank',
+                              style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.w300),
+                            ),
+                          )
                         ],
                       ),
-                      FlatButton(
-                        onPressed: openSaltEdgeConnection,
-                        highlightColor: Colors.transparent,
-                        child: Text(
-                          '+ Link Bank',
-                          style: TextStyle(color: Colors.lightBlue, fontWeight: FontWeight.w300),
-                        ),
-                      )
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-              Flexible(
+              Container(
+                alignment: Alignment.center,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
+                    SvgPicture.network(
+                      'https://d1uuj3mi6rzwpm.cloudfront.net/logos/providers/xf/placeholder_global.svg',
+                      height: 100,
+                      color: Colors.white,
+                      width: 100,
+                    ),
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 200),
+                      constraints: BoxConstraints(maxWidth: 270),
                       child: Text(
                         'Link bank accounts from india and abroad.View all your finances in a single place',
-                        style: Theme.of(context).textTheme.overline,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(color: Colors.white, fontWeight: FontWeight.w300),
                         textAlign: TextAlign.center,
                       ),
                     ),
