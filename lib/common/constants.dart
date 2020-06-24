@@ -7,7 +7,7 @@ class Constants {
   static const LOCAL_PIN = 'LOCAL_PIN';
 
   //Customer ID
-  static const CUSTOMER_ID = '239699917143017727';
+  static const CUSTOMER_ID = '247010348656232993';
 
   //Credentials
   static const APP_APP_ID = 'dIfKml_n1eaqh1Ji_Gk-4joshjWZpFM374LBSnnCy7o';

@@ -56,6 +56,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+                                child: Text('Name',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                    )),
+                              ),
                               StreamBuilder(
                                 stream: _register.userNameStream,
                                 builder: (context, snapshot) {
@@ -95,7 +102,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   );
                                 },
                               ),
-                              const SizedBox(height: 15),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+                                child: Text('Date of Birth',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                    )),
+                              ),
                               Container(
                                 decoration: BoxDecoration(
                                   color: Color.fromRGBO(241, 245, 251, 1),
@@ -231,7 +244,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   return SizedBox.shrink();
                                 },
                               ),
-                              const SizedBox(height: 15),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+                                child: Text('Mobile',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                    )),
+                              ),
                               Container(
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +306,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 15),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+                                child: Text('Country of residence',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                    )),
+                              ),
                               CountryOptions(register: _register),
                               const SizedBox(height: 15),
                             ],
