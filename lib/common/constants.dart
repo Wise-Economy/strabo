@@ -1,13 +1,17 @@
 class Constants {
   static const IS_LOGGED_IN = 'IS_LOGGED_IN';
   static const IS_EXISTING_USER = 'IS_EXISTING_USER';
+  static const SESSION_ID = 'SESSION_ID';
+
+  //USER
+  static const USER_INFO = 'USER_INFO';
 
 
   //LOCAL PIN
   static const LOCAL_PIN = 'LOCAL_PIN';
 
   //Customer ID
-  static const CUSTOMER_ID = '239699917143017727';
+  static const CUSTOMER_ID = '216128215905733129';
 
   //Credentials
   static const APP_APP_ID = 'dIfKml_n1eaqh1Ji_Gk-4joshjWZpFM374LBSnnCy7o';

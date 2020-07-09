@@ -1,13 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../common/constants.dart';
 import '../models/AppState.dart';
+import '../models/User.dart';
 import '../screens/HomeScreen.dart';
 
 class PasscodeScreen extends StatefulWidget {
@@ -27,12 +26,12 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
   bool _isExistingUser;
   SharedPreferences _preferencesInstance;
   TextEditingController _pinController = TextEditingController();
-  GoogleSignInAccount _currentUser;
+  User _currentUser;
 
   @override
   void initState() {
     super.initState();
-    _currentUser = Provider.of<AppState>(context, listen: false).currentUser;
+    _currentUser = Provider.of<AppState>(context, listen: false).user;
     _preferencesInstance = Provider.of<AppState>(context, listen: false).preferences;
     _isExistingUser = widget.isExistingUser ?? false;
     setState(() {
@@ -52,6 +51,7 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
         savedPIN = _preferencesInstance?.getString(Constants.LOCAL_PIN);
       }
       if (pin == savedPIN) {
+        _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -96,10 +96,6 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
     }
   }
 
-  onSubmittedHandler(String value) {
-    print('onSubmittedHandler Called');
-  }
-
   onChangedHandler(String pin) {
     if (pin.isNotEmpty && pin.length == 6) {
       onSubmit(pin);
@@ -116,13 +112,13 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
           children: <Widget>[
             _isExistingUser
                 ? CircleAvatar(
-                    backgroundImage: NetworkImage(_currentUser?.photoUrl),
+                    backgroundImage: NetworkImage(_currentUser?.profilePhoto),
                     radius: 30,
                   )
                 : SizedBox.shrink(),
             SizedBox(height: 10),
             Text(
-              '${_currentUser?.displayName}',
+              '${_currentUser?.fullName}',
               style: TextStyle(fontSize: 16, color: Theme.of(context).primaryColor),
             ),
             SizedBox(height: 10),
@@ -139,7 +135,6 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
               obscureText: true,
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
-              onSubmitted: onSubmittedHandler,
               onChanged: onChangedHandler,
               style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.w300, letterSpacing: 10),
               decoration: InputDecoration(

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../InitScreen.dart';
 import '../../models/AppState.dart';
+import '../../models/User.dart';
 import '../../common/constants.dart';
 import '../../common/widgets/progress.dart';
 
@@ -11,7 +12,7 @@ class ProfileTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppState appState = Provider.of<AppState>(context, listen: false);
-
+    User _currentUser = appState.user;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -20,7 +21,7 @@ class ProfileTab extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
-                backgroundImage: NetworkImage('${appState.currentUser?.photoUrl}'),
+                backgroundImage: NetworkImage('${_currentUser?.profilePhoto}'),
                 minRadius: 25,
                 maxRadius: 35,
               ),
@@ -31,7 +32,7 @@ class ProfileTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    '${appState.currentUser?.displayName}',
+                    '${_currentUser?.fullName}',
                     style: TextStyle(fontSize: 20),
                   ),
                 ],
@@ -40,7 +41,7 @@ class ProfileTab extends StatelessWidget {
             ListTile(
               onTap: () {},
               title: Text('Email'),
-              subtitle: Text('${appState.currentUser?.email}'),
+              subtitle: Text('${_currentUser?.email}'),
             ),
             ListTile(
               onTap: () {

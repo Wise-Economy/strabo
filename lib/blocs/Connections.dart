@@ -50,8 +50,11 @@ class Connections {
         }
       }
     };
-    http.Response response = await http.post('https://www.saltedge.com/api/v5/connect_sessions/create',
-        headers: headers, body: jsonEncode(body));
+    http.Response response = await http.post(
+      'https://www.saltedge.com/api/v5/connect_sessions/create',
+      headers: headers,
+      body: jsonEncode(body),
+    );
     print('ResponseCode:${response.statusCode}');
     if (response.statusCode == 200) {
       ConnectSessionData data = ConnectSession.fromJson(jsonDecode(response.body)).data;

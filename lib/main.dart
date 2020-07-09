@@ -1,17 +1,24 @@
-import 'package:finwise/screens/IntialAddBank.dart';
-import 'package:finwise/screens/PasscodeScreen.dart';
+import 'package:finwise/screens/RegisterScreen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
+import 'api/API.dart';
 import 'models/AppState.dart';
 import 'screens/InitScreen.dart';
 
 void main() {
   runApp(
-    Provider(
-      create: (context) => AppState(),
-      dispose: (context, AppState appState) => appState.dispose(),
+    MultiProvider(
+      providers: [
+        Provider(
+          create: (context) => AppState(),
+          dispose: (context, AppState appState) => appState.dispose(),
+        ),
+        Provider(
+          create: (context) => OurServer(),
+        )
+      ],
       child: App(),
     ),
   );

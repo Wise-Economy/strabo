@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/AppState.dart';
+import '../models/GUser.dart';
+import '../models/User.dart';
 import '../common/constants.dart';
+import '../common/widgets/progress.dart';
 import '../screens/PasscodeScreen.dart';
 import '../screens/RegisterScreen.dart';
+import '../models/GConnect.dart';
+import '../api/API.dart';
 
 class InitScreen extends StatefulWidget {
   @override
@@ -18,95 +24,109 @@ class InitScreen extends StatefulWidget {
 class _InitScreenState extends State<InitScreen> {
   GoogleSignInAccount _currentUser;
   GoogleSignIn _googleSignIn;
-  bool _isSignedIn = true;
-  SharedPreferences _preferencesInstance;
+  bool _showProgress = true;
+  SharedPreferences _prefsInstance;
+  OurServer _ourServer;
 
   @override
   void initState() {
     super.initState();
     _googleSignIn = Provider.of<AppState>(context, listen: false).googleSignIn;
-    _checkIfIsSignedIn();
+    _ourServer = Provider.of<OurServer>(context, listen: false);
+    _init();
   }
 
-  _checkIfIsSignedIn() async {
-    _preferencesInstance = await SharedPreferences.getInstance();
-    Provider.of<AppState>(context, listen: false).preferences = _preferencesInstance;
-    bool isLoggedIn = false;
-    if (_preferencesInstance.containsKey(Constants.IS_LOGGED_IN)) {
-      isLoggedIn = _preferencesInstance.getBool(Constants.IS_LOGGED_IN);
-      print('isLoggedIn: $isLoggedIn');
-      bool isGSignIn = await _googleSignIn.isSignedIn();
-      print('isGSignIn: $isGSignIn');
-      if (isLoggedIn && isGSignIn) {
-        _currentUser = await _googleSignIn.signInSilently();
-        Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
-      } else {
-        if (isGSignIn) {
-          await _googleSignIn.disconnect();
-        }
-        isLoggedIn = false;
-      }
-    }
-    print('isLoggedIn: $isLoggedIn');
-    setState(() {
-      _isSignedIn = isLoggedIn;
-    });
+  @override
+  void dispose() {
+    _prefsInstance = null;
+    _currentUser = null;
+    _googleSignIn = null;
+    super.dispose();
+  }
 
-    gotoNextScreen();
+  void _checkIfIsSignedIn() {
+    bool isLoggedIn = _prefsInstance.getBool(Constants.IS_LOGGED_IN);
+    if (isLoggedIn ?? false) {
+      User user = User.fromRawJson(_prefsInstance.getString(Constants.USER_INFO));
+      Provider.of<AppState>(context, listen: false).user = user;
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => PasscodeScreen(isExistingUser: true)),
+      );
+    }
+  }
+
+  _init() async {
+    _prefsInstance = await SharedPreferences.getInstance();
+    Provider.of<AppState>(context, listen: false).preferences = _prefsInstance;
+    setState(() {
+      _showProgress = false;
+    });
+    _checkIfIsSignedIn();
   }
 
   _handleSignIn() async {
     try {
-      _currentUser = await _googleSignIn.signIn();
-      _currentUser.authentication.then((value) => print('Access Token: ${value.accessToken}'));
-      if (_currentUser != null) {
-        if (isExistingUser()) {
-          _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
-        }
-        Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
-        setState(() {
-          _isSignedIn = true;
-        });
+      setState(() {
+        _showProgress = true;
+      });
+      bool isSignedIn = await _googleSignIn.isSignedIn();
+      if (isSignedIn) {
+        await _googleSignIn.disconnect();
       }
-      gotoNextScreen();
-    } catch (error) {
-      print(error);
-    }
-  }
+      setState(() {
+        _showProgress = false;
+      });
+      _currentUser = await _googleSignIn?.signIn();
+      if (_currentUser != null) {
+        Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
+        GoogleSignInAuthentication _googleSignInAuthentication = await _currentUser?.authentication;
+        String accessToken = _googleSignInAuthentication?.accessToken;
+        GUser gUser = GUser(
+            googleId: _currentUser.id,
+            fullName: _currentUser.displayName,
+            profilePhoto: _currentUser.photoUrl,
+            email: _currentUser.email,
+            googleSecretToken: accessToken);
 
-  gotoNextScreen() async {
-    if (_isSignedIn) {
-      //check if user already exists
-      if (isExistingUser()) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PasscodeScreen(isExistingUser: true),
-          ),
-        );
-      } else {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => RegisterScreen(username: _currentUser.displayName, isExistingUser: false),
-          ),
-        );
-        if (!result) {
-          await _googleSignIn.disconnect();
+        setState(() {
+          _showProgress = true;
+        });
+        http.Response response = await _ourServer?.googleConnect(gUser);
+        if (response?.statusCode == 200) {
+          String sessionId = response?.headers['set-cookie'].split(";")[4].split(",")[1].split('=')[1];
+          _prefsInstance.setString(Constants.SESSION_ID, sessionId);
+          GConnect gConnect = GConnect.fromRawJson(response?.body);
+          if (gConnect.isNewUser) {
+            final refresh = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => RegisterScreen(user: gConnect.user, isExistingUser: false)),
+            );
+            if (!refresh) {
+              await _googleSignIn?.disconnect();
+            }
+            setState(() {
+              _showProgress = false;
+            });
+          } else {
+            setState(() {
+              _showProgress = false;
+            });
+            Provider.of<AppState>(context, listen: false).user = gConnect.user;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => PasscodeScreen(isExistingUser: true)),
+            );
+          }
+        } else {
           setState(() {
-            _isSignedIn = result;
+            _showProgress = false;
           });
         }
       }
+    } catch (error) {
+      print(error);
     }
-  }
-
-  // here goes network call with our server to check if user is existing or not
-  bool isExistingUser() {
-    if (_preferencesInstance.containsKey(Constants.IS_EXISTING_USER)) {
-      return _preferencesInstance.getBool(Constants.IS_EXISTING_USER);
-    }
-    return false;
   }
 
   @override
@@ -115,7 +135,7 @@ class _InitScreenState extends State<InitScreen> {
       backgroundColor: Theme.of(context).accentColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 25.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Column(
             children: <Widget>[
               Flexible(
@@ -125,13 +145,13 @@ class _InitScreenState extends State<InitScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        'Wiseeco',
-                        style: TextStyle(fontSize: 40.0, color: Colors.white),
+                        'STRABO',
+                        style: TextStyle(fontSize: 35.0, color: Colors.white),
                       ),
                       Text(
                         'Personal finance manager',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 9,
                           color: Colors.white60,
                         ),
                       ),
@@ -141,10 +161,10 @@ class _InitScreenState extends State<InitScreen> {
               ),
               Container(
                 height: 80,
-                width: 300,
+                width: 320,
                 child: AnimatedCrossFade(
                   sizeCurve: Curves.easeInOutBack,
-                  crossFadeState: _isSignedIn ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                  crossFadeState: _showProgress ? CrossFadeState.showSecond : CrossFadeState.showFirst,
                   duration: Duration(milliseconds: 200),
                   firstChild: Center(
                     key: ValueKey('1'),
@@ -165,9 +185,7 @@ class _InitScreenState extends State<InitScreen> {
                                 height: 25,
                                 width: 25,
                               ),
-                              SizedBox(
-                                width: 10,
-                              ),
+                              SizedBox(width: 10),
                               Text(
                                 'Connect via Google',
                                 style: TextStyle(

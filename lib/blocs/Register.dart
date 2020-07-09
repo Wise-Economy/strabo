@@ -1,5 +1,7 @@
 import 'package:rxdart/rxdart.dart';
 
+import '../models/User.dart';
+
 class Register {
   // User Name
   final _userNameController = BehaviorSubject<String>();
@@ -17,7 +19,7 @@ class Register {
 
   get changeMobileNumber => _mobileNumberController.sink.add;
 
-  String get mobileNumber => _mobileNumberController.value;
+  String get userMobileNumber => _mobileNumberController.value;
 
   //User Mobile Number Country Code
   final _mobileNumberCountryCodeController = BehaviorSubject<String>();
@@ -26,7 +28,7 @@ class Register {
 
   get changeMobileNumberCountryCode => _mobileNumberCountryCodeController.sink.add;
 
-  String get mobileNumberCountryCode => _mobileNumberCountryCodeController.value;
+  String get userMobileNumberCountryCode => _mobileNumberCountryCodeController.value;
 
   //UserResidence
   final _userResidenceController = BehaviorSubject<String>();
@@ -55,7 +57,7 @@ class Register {
 
   String get userDOBMonth => _userDOBMonthController.value;
 
-  //Month
+  //Year
   final _userDOBYearController = BehaviorSubject<String>();
 
   ValueStream<String> get userDOBYearStream => _userDOBYearController.stream;
@@ -65,14 +67,10 @@ class Register {
   String get userDOBYear => _userDOBYearController.value;
 
   //DOB Merger
-  ValueStream<String> get userDOBStream =>
-      CombineLatestStream.combine3(userDOBDayStream, userDOBMonthStream, userDOBYearStream, (a, b, c) => "$a/$b/$c")
-          .asBroadcastStream()
-          .shareValue();
+  Stream<bool> get userDOBStream =>
+      CombineLatestStream.combine3(userDOBYearStream, userDOBMonthStream, userDOBDayStream, (year,month,day) => true);
 
-  String get userDOB => userDOBStream.value;
-
-  validateFields() {
+  validateFormFields() {
     bool isValid = true;
     if (userName == null || userName.isEmpty) {
       _userNameController.sink.addError('Invalid Username');
@@ -88,11 +86,23 @@ class Register {
       _userDOBYearController.sink.addError('Invalid DOB');
       isValid = false;
     }
-    if (mobileNumber == null || mobileNumber.isEmpty || mobileNumber.length < 10) {
+    if (userMobileNumber == null || userMobileNumber.isEmpty || userMobileNumber.length < 10) {
       _mobileNumberController.sink.addError('Invalid Mobile Number');
       isValid = false;
     }
     return isValid;
+  }
+
+  User getFormValues() {
+    return User(
+        fullName: userName,
+        dateOfBirth: '$userDOBYear-$userDOBMonth-$userDOBDay',
+        phoneNumber: "+$userMobileNumberCountryCode $userMobileNumber",
+        residenceCountry:ResidenceCountry(
+            countryId: int.parse('$userMobileNumberCountryCode'),
+            countryName: "$userResidence"
+        )
+    );
   }
 
   dispose() {
