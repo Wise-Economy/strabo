@@ -46,6 +46,7 @@ class _InitScreenState extends State<InitScreen> {
 
   void _checkIfIsSignedIn() {
     bool isLoggedIn = _prefsInstance.getBool(Constants.IS_LOGGED_IN);
+    print('isLoggedIn:: $isLoggedIn');
     if (isLoggedIn ?? false) {
       User user = User.fromRawJson(_prefsInstance.getString(Constants.USER_INFO));
       Provider.of<AppState>(context, listen: false).user = user;
