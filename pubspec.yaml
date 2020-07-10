@@ -32,7 +32,7 @@ dependencies:
   provider: ^4.1.2
   shared_preferences: ^0.5.7+3
   http: ^0.12.1
-  flutter_svg: ^0.17.4
+  flutter_svg: ^0.18.0
   cached_network_image: ^2.2.0+1
   rxdart: ^0.24.1
   webview_flutter: ^0.3.22+1
