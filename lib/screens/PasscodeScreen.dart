@@ -28,6 +28,7 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
   TextEditingController _pinController = TextEditingController();
   User _currentUser;
 
+
   @override
   void initState() {
     super.initState();

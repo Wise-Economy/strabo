@@ -57,6 +57,7 @@ class Register {
 
   String get userDOBMonth => _userDOBMonthController.value;
 
+
   //Year
   final _userDOBYearController = BehaviorSubject<String>();
 
@@ -67,10 +68,12 @@ class Register {
   String get userDOBYear => _userDOBYearController.value;
 
   //DOB Merger
+
   Stream<bool> get userDOBStream =>
       CombineLatestStream.combine3(userDOBYearStream, userDOBMonthStream, userDOBDayStream, (year,month,day) => true);
 
   validateFormFields() {
+
     bool isValid = true;
     if (userName == null || userName.isEmpty) {
       _userNameController.sink.addError('Invalid Username');
@@ -92,7 +95,7 @@ class Register {
     }
     return isValid;
   }
-
+  
   User getFormValues() {
     return User(
         fullName: userName,
@@ -104,7 +107,7 @@ class Register {
         )
     );
   }
-
+  
   dispose() {
     _userNameController.close();
     _mobileNumberController.close();

@@ -469,6 +469,14 @@ class CountryOptionsState extends State<CountryOptions> {
     widget.register.changeUserResidence(country);
   }
 
+
+  @override
+  void initState() {
+    super.initState();
+    country = _countries[0];
+    widget.register.changeUserResidence(country);
+  }
+
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField(

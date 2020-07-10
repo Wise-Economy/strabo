@@ -6,7 +6,6 @@ class Constants {
   //USER
   static const USER_INFO = 'USER_INFO';
 
-
   //LOCAL PIN
   static const LOCAL_PIN = 'LOCAL_PIN';
 

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../blocs/Connections.dart';
 import '../models/User.dart';
 
+
 class AppState {
   GoogleSignIn googleSignIn = GoogleSignIn();
   GoogleSignInAccount currentUser;

@@ -11,6 +11,7 @@ import '../models/GUser.dart';
 import '../models/User.dart';
 import '../common/constants.dart';
 import '../common/widgets/progress.dart';
+
 import '../screens/PasscodeScreen.dart';
 import '../screens/RegisterScreen.dart';
 import '../models/GConnect.dart';
@@ -79,6 +80,9 @@ class _InitScreenState extends State<InitScreen> {
       });
       _currentUser = await _googleSignIn?.signIn();
       if (_currentUser != null) {
+        if (isExistingUser()) {
+          _preferencesInstance.setBool(Constants.IS_LOGGED_IN, true);
+        }
         Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
         GoogleSignInAuthentication _googleSignInAuthentication = await _currentUser?.authentication;
         String accessToken = _googleSignInAuthentication?.accessToken;
@@ -88,7 +92,6 @@ class _InitScreenState extends State<InitScreen> {
             profilePhoto: _currentUser.photoUrl,
             email: _currentUser.email,
             googleSecretToken: accessToken);
-
         setState(() {
           _showProgress = true;
         });
@@ -186,6 +189,7 @@ class _InitScreenState extends State<InitScreen> {
                                 width: 25,
                               ),
                               SizedBox(width: 10),
+
                               Text(
                                 'Connect via Google',
                                 style: TextStyle(
