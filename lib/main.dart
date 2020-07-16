@@ -1,4 +1,3 @@
-import 'package:finwise/screens/RegisterScreen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -16,7 +15,7 @@ void main() {
           dispose: (context, AppState appState) => appState.dispose(),
         ),
         Provider(
-          create: (context) => OurServer(),
+          create: (context) => Server(),
         )
       ],
       child: App(),

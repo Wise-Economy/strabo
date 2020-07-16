@@ -1,3 +1,4 @@
+import 'package:finwise/common/widgets/alert.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -10,7 +11,6 @@ import '../models/AppState.dart';
 import '../models/GUser.dart';
 import '../models/User.dart';
 import '../common/constants.dart';
-import '../common/widgets/progress.dart';
 import '../screens/PasscodeScreen.dart';
 import '../screens/RegisterScreen.dart';
 import '../models/GConnect.dart';
@@ -26,13 +26,13 @@ class _InitScreenState extends State<InitScreen> {
   GoogleSignIn _googleSignIn;
   bool _showProgress = true;
   SharedPreferences _prefsInstance;
-  OurServer _ourServer;
+  Server _server;
 
   @override
   void initState() {
     super.initState();
     _googleSignIn = Provider.of<AppState>(context, listen: false).googleSignIn;
-    _ourServer = Provider.of<OurServer>(context, listen: false);
+    _server = Provider.of<Server>(context, listen: false);
     _init();
   }
 
@@ -50,9 +50,10 @@ class _InitScreenState extends State<InitScreen> {
     if (isLoggedIn ?? false) {
       User user = User.fromRawJson(_prefsInstance.getString(Constants.USER_INFO));
       Provider.of<AppState>(context, listen: false).user = user;
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => PasscodeScreen(isExistingUser: true)),
+        (route) => false,
       );
     }
   }
@@ -60,6 +61,7 @@ class _InitScreenState extends State<InitScreen> {
   _init() async {
     _prefsInstance = await SharedPreferences.getInstance();
     Provider.of<AppState>(context, listen: false).preferences = _prefsInstance;
+    await Future.delayed(Duration(milliseconds: 200));
     setState(() {
       _showProgress = false;
     });
@@ -75,9 +77,6 @@ class _InitScreenState extends State<InitScreen> {
       if (isSignedIn) {
         await _googleSignIn.disconnect();
       }
-      setState(() {
-        _showProgress = false;
-      });
       _currentUser = await _googleSignIn?.signIn();
       if (_currentUser != null) {
         Provider.of<AppState>(context, listen: false).currentUser = _currentUser;
@@ -89,21 +88,18 @@ class _InitScreenState extends State<InitScreen> {
             profilePhoto: _currentUser.photoUrl,
             email: _currentUser.email,
             googleSecretToken: accessToken);
-
-        setState(() {
-          _showProgress = true;
-        });
-        http.Response response = await _ourServer?.googleConnect(gUser);
+        http.Response response = await _server?.googleConnect(gUser);
         if (response?.statusCode == 200) {
           String sessionId = response?.headers['set-cookie'].split(";")[4].split(",")[1].split('=')[1];
           _prefsInstance.setString(Constants.SESSION_ID, sessionId);
+          print('Session ID:: $sessionId');
           GConnect gConnect = GConnect.fromRawJson(response?.body);
           if (gConnect.isNewUser) {
             final refresh = await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => RegisterScreen(user: gConnect.user, isExistingUser: false)),
             );
-            if (!refresh) {
+            if (refresh) {
               await _googleSignIn?.disconnect();
             }
             setState(() {
@@ -120,12 +116,22 @@ class _InitScreenState extends State<InitScreen> {
             );
           }
         } else {
+          await showAlert(context: context);
           setState(() {
             _showProgress = false;
           });
         }
+      } else {
+        await showAlert(context: context);
+        setState(() {
+          _showProgress = false;
+        });
       }
     } catch (error) {
+      await showAlert(context: context);
+      setState(() {
+        _showProgress = false;
+      });
       print(error);
     }
   }
@@ -172,32 +178,33 @@ class _InitScreenState extends State<InitScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: OutlineButton(
-                          highlightColor: Colors.transparent,
-                          textColor: Colors.white,
-                          highlightedBorderColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 15.0),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
-                          borderSide: BorderSide(color: Colors.white, width: 1),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              SvgPicture.asset(
-                                'assets/brand/google.svg',
-                                height: 25,
-                                width: 25,
+                        onPressed: _handleSignIn,
+                        highlightColor: Colors.transparent,
+                        textColor: Colors.white,
+                        highlightedBorderColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 15.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3.0)),
+                        borderSide: BorderSide(color: Colors.white, width: 1),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            SvgPicture.asset(
+                              'assets/brand/google.svg',
+                              height: 25,
+                              width: 25,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Sign In',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.white,
                               ),
-                              SizedBox(width: 10),
-                              Text(
-                                'Connect via Google',
-                                style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          onPressed: _handleSignIn),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   secondChild: Center(

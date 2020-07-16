@@ -9,6 +9,7 @@ class Constants {
 
   //LOCAL PIN
   static const LOCAL_PIN = 'LOCAL_PIN';
+  static const IS_PIN_SET = 'IS_PIN_SET';
 
   //Customer ID
   static const CUSTOMER_ID = '216128215905733129';
