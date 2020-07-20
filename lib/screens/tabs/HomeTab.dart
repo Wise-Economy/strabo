@@ -72,6 +72,7 @@ class _HomeTabState extends State<HomeTab> {
   updateServer(int userConnectionId, String seConnectionId) async {
     String sessionId = _prefsInstance?.getString(Constants.SESSION_ID);
     final response = await _server.bankConnectionSuccess(sessionId, userConnectionId, seConnectionId);
+    print('update Server:: ${response.body}');
     if (response.statusCode == 200) {
       print('Connection Success Server Updated');
     } else {

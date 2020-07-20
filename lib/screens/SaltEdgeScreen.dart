@@ -45,7 +45,6 @@ class _SaltEdgeScreenState extends State<SaltEdgeScreen> {
                       initialUrl: '${widget.connectURL}',
                       navigationDelegate: (NavigationRequest request) {
                         print('RequestURL:${request.url}');
-//                        http://ec2-18-218-180-53.us-east-2.compute.amazonaws.com/salt_edge_connect?connection_id=261016846080150125
                         if (request.url.contains('connection_id')) {
                           String connectionId = request.url.split('?')[1].split('=')[1];
                           Navigator.pop(context, <String, String>{"connection_id": connectionId});

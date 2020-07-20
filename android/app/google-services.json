@@ -1,42 +1,34 @@
 {
   "project_info": {
-    "project_number": "595336953565",
-    "firebase_url": "https://finwise-ccece.firebaseio.com",
-    "project_id": "finwise-ccece",
-    "storage_bucket": "finwise-ccece.appspot.com"
+    "project_number": "1026697682851",
+    "firebase_url": "https://wiseeco-9285b.firebaseio.com",
+    "project_id": "wiseeco-9285b",
+    "storage_bucket": "wiseeco-9285b.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:595336953565:android:24b19e2a40a103feb46534",
+        "mobilesdk_app_id": "1:1026697682851:android:2922e5378167a6f7c5c416",
         "android_client_info": {
           "package_name": "com.finwise"
         }
       },
       "oauth_client": [
         {
-          "client_id": "595336953565-5vbvmp6nfoq37pjc1gku2ti8dtshv20s.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.finwise",
-            "certificate_hash": "6e03ab4981f6242c595573f7c88ca7ba3b2d9652"
-          }
-        },
-        {
-          "client_id": "595336953565-4nl9jel311u97mvo0fqvdanm2jmov7on.apps.googleusercontent.com",
+          "client_id": "1026697682851-18cshsm78g34ieh3c0rnvt237h0na7h5.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBgKv5eJ1y1i-xzK7-0qbQTBsi_GxMrxL4"
+          "current_key": "AIzaSyAsuqhmtaWnelZkHerOJ1ee2ze-fEC6FK0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "595336953565-4nl9jel311u97mvo0fqvdanm2jmov7on.apps.googleusercontent.com",
+              "client_id": "1026697682851-18cshsm78g34ieh3c0rnvt237h0na7h5.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
