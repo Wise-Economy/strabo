@@ -5,15 +5,15 @@ import 'package:http/http.dart' as http;
 import '../models/GUser.dart';
 import '../models/User.dart';
 
-class OurServer {
-  final baseURL = "http://ec2-13-229-88-171.ap-southeast-1.compute.amazonaws.com/backend/users";
+class Server {
+  final baseURL = "http://ec2-13-229-88-171.ap-southeast-1.compute.amazonaws.com";
   final Map<String, String> headers = {"Accept": "application/json", "Content-type": "application/json"};
 
   Future<http.Response> googleConnect(GUser gUser) async {
     String body = gUser.toRawJson();
     print("googleConnect: $body");
     http.Response response = await http.post(
-      '$baseURL/google_connect',
+      '$baseURL/backend/users/google_connect',
       headers: headers,
       body: body,
     );
@@ -25,7 +25,7 @@ class OurServer {
     headers.putIfAbsent("Cookie", () => 'sessionid=$sessionId');
     print(headers.toString());
     http.Response response = await http.put(
-      '$baseURL/register',
+      '$baseURL/backend/users/register',
       headers: headers,
       body: body,
     );
@@ -33,10 +33,36 @@ class OurServer {
   }
 
   Future<http.Response> fetchEnablesCountries() async {
-    http.Response response = await http.put(
-      '$baseURL/get_enabled_countries',
+    http.Response response = await http.get(
+      '$baseURL/backend/users/get_enabled_countries',
       headers: headers,
     );
+    return response;
+  }
+
+  Future<http.Response> fetchLinkableCountries(String sessionId) async {
+    headers.putIfAbsent("Cookie", () => 'sessionid=$sessionId');
+    http.Response response = await http.get(
+      '$baseURL/backend/global_home_screen/countries_linkable/show',
+      headers: headers,
+    );
+    return response;
+  }
+
+  Future<http.Response> fetchConnectSession(String sessionId, int forCountry) async {
+    headers.putIfAbsent("Cookie", () => 'sessionid=$sessionId');
+    http.Response response = await http.get(
+      '$baseURL/backend/saltedge/connect?country_id=$forCountry',
+      headers: headers,
+    );
+    return response;
+  }
+
+  Future<http.Response> bankConnectionSuccess(String sessionId, int userConnectionId, String seConnectionId) async {
+    String body = jsonEncode({'user_connection_id': userConnectionId, 'se_connection_id': seConnectionId});
+    headers.putIfAbsent("Cookie", () => 'sessionid=$sessionId');
+    http.Response response =
+        await http.post('$baseURL/backend/saltedge/callbacks/connection_success', headers: headers, body: body);
     return response;
   }
 }

@@ -53,13 +53,14 @@ class ProfileTab extends StatelessWidget {
                   },
                 );
                 appState.googleSignIn.disconnect().then((value) {
-                  appState.preferences.setBool(Constants.IS_LOGGED_IN, false);
-                  Navigator.of(context).pop();
-                  Navigator.push(
+                  appState.preferences?.setBool(Constants.IS_LOGGED_IN, false);
+                  appState.preferences?.setBool(Constants.IS_PIN_SET, false);
+                  Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
                       builder: (context) => InitScreen(),
                     ),
+                    (route) => false,
                   );
                 });
               },

@@ -11,7 +11,7 @@ class CountryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${country.name}'),
+        title: Text('${country.countryName}'),
       ),
       body: SafeArea(
         child: Center(
@@ -20,11 +20,9 @@ class CountryScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Text(
-                '${country.name}',
+                '${country.countryName}',
                 style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 30,
-                    color: Theme.of(context).textTheme.bodyText1.color),
+                    fontWeight: FontWeight.w400, fontSize: 30, color: Theme.of(context).textTheme.bodyText1.color),
               ),
               SizedBox(
                 height: 20,
@@ -39,8 +37,7 @@ class CountryScreen extends StatelessWidget {
               Container(
                 height: 100,
                 width: 100,
-                decoration: BoxDecoration(
-                    color:Theme.of(context).accentColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Theme.of(context).accentColor, shape: BoxShape.circle),
                 child: Center(
                   child: Text(
                     '  ₹ 345\nAvailable',
