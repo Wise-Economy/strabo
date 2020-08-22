@@ -89,6 +89,7 @@ class _InitScreenState extends State<InitScreen> {
             email: _currentUser.email,
             googleSecretToken: accessToken);
         http.Response response = await _server?.googleConnect(gUser);
+        print('${response.body}');
         if (response?.statusCode == 200) {
           String sessionId = response?.headers['set-cookie'].split(";")[4].split(",")[1].split('=')[1];
           _prefsInstance.setString(Constants.SESSION_ID, sessionId);

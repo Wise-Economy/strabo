@@ -17,6 +17,7 @@ class Server {
       headers: headers,
       body: body,
     );
+    print('${response.body}');
     return response;
   }
 
@@ -29,6 +30,7 @@ class Server {
       headers: headers,
       body: body,
     );
+    print('${response.body}');
     return response;
   }
 
@@ -37,6 +39,7 @@ class Server {
       '$baseURL/backend/users/get_enabled_countries',
       headers: headers,
     );
+    print('${response.body}');
     return response;
   }
 
@@ -46,6 +49,7 @@ class Server {
       '$baseURL/backend/global_home_screen/countries_linkable/show',
       headers: headers,
     );
+    print('${response.body}');
     return response;
   }
 
@@ -55,6 +59,7 @@ class Server {
       '$baseURL/backend/saltedge/connect?country_id=$forCountry',
       headers: headers,
     );
+    print('${response.body}');
     return response;
   }
 
@@ -63,6 +68,7 @@ class Server {
     headers.putIfAbsent("Cookie", () => 'sessionid=$sessionId');
     http.Response response =
         await http.post('$baseURL/backend/saltedge/callbacks/connection_success', headers: headers, body: body);
+    print('${response.body}');
     return response;
   }
 }

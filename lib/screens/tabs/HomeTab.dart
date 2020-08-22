@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/svg.dart';
@@ -197,66 +198,89 @@ class _HomeTabState extends State<HomeTab> {
           );
   }
 
-  Future<void> _askedToLead() async {
-    switch (await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          return SimpleDialog(title: Text('Select Country'), children: <Widget>[
-            SimpleDialogOption(
-              padding: EdgeInsets.all(16),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: const Text(
-                'India',
-                style: TextStyle(fontSize: 16),
+  Widget recentTransactions() {
+    return DraggableScrollableSheet(
+      builder: (BuildContext context, ScrollController scrollController) {
+        return Container(
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(height: 10),
+              Center(
+                child: Container(
+                  height: 6,
+                  width: 40,
+                  decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(10)),
+                ),
               ),
-            ),
-            SimpleDialogOption(
-              padding: EdgeInsets.all(16),
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: const Text(
-                'Germany',
-                style: TextStyle(fontSize: 16),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Recent Transactions',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                ),
               ),
-            ),
-          ]);
-        })) {
-      case true:
-        // Let's go.
-        // ...
-        break;
-      case false:
-        // ...
-        break;
-    }
-  }
-
-  Widget addBank() {
-    return FloatingActionButton(
-      onPressed: _askedToLead,
-      backgroundColor: Theme.of(context).primaryColor,
-      child: Icon(Icons.add),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                child: Text('Today'),
+              ),
+              SizedBox(height: 10),
+              Flexible(
+                flex: 1,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => Divider(
+                      indent: 75,
+                      thickness: 2,
+                    ),
+                    controller: scrollController,
+                    itemCount: 15,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ListTile(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetailScreen()));
+                        },
+                        leading: Image.network(
+                          "https://www.freepnglogos.com/uploads/netflix-logo-circle-png-5.png",
+                          height: 40,
+                        ),
+                        title: Text('Netflix Inc'),
+                        trailing: Text('€ 10.99'),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-//      floatingActionButton: addBank(),
       body: FutureBuilder<CountriesLinkable>(
         future: _countriesLinkable,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Country> _countries = snapshot.data.countriesLinkable;
-            return ListView.builder(
-              itemCount: _countries.length,
-              itemBuilder: (BuildContext context, index) {
-                Country country = _countries[index];
-                return countryCard(country, index);
-              },
+            return Stack(
+              children: <Widget>[
+                ListView.builder(
+                  itemCount: _countries.length,
+                  itemBuilder: (BuildContext context, index) {
+                    Country country = _countries[index];
+                    return countryCard(country, index);
+                  },
+                ),
+                recentTransactions()
+              ],
             );
           } else {
             return Center(
@@ -264,6 +288,61 @@ class _HomeTabState extends State<HomeTab> {
             );
           }
         },
+      ),
+    );
+  }
+}
+
+class TransactionDetailScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Transaction'),),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(height: 15),
+            Center(
+              child: Image.network(
+                "https://www.freepnglogos.com/uploads/netflix-logo-circle-png-5.png",
+                height: 80,
+              ),
+            ),
+            SizedBox(height: 15),
+            Text(
+              '€ 10.99',
+              style: TextStyle(fontSize: 30),
+            ),
+            Text(
+              'Netflix Subscription',
+              style: TextStyle(fontSize: 20, color: Colors.redAccent),
+            ),
+            SizedBox(height: 15),
+            Container(
+                padding: EdgeInsets.all(3),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), border: Border.all(width: 2)),
+                child: Text(
+                  'Entertainment',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+                )),
+            SizedBox(height: 15),
+            Divider(
+              height: 15,
+              thickness: 6,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text('Details', style: TextStyle(fontSize: 20,)),
+                  Text('25-Jun-2020'),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

@@ -28,7 +28,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Wiseeco',
+      title: 'Strabo',
       theme: theme(),
       home: InitScreen(),
     );
